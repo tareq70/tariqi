@@ -27,10 +27,10 @@ namespace tariqi.Application_Layer.Services
                 };
 
                 await _userManager.CreateAsync(user);
-                await _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(user, "Passenger");
             }
 
-            var jwtToken = _token.GenerateJwtToken(user, "User");
+            var jwtToken = _token.GenerateJwtToken(user, "Passenger");
             return jwtToken;
         }
     }
