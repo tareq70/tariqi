@@ -22,8 +22,7 @@ namespace tariqi.Application_Layer.Services
 
         public async Task<IEnumerable<RegionDto>> GetAllRegionsAsync()
         {
-            var regionRepo = _unitOfWork.GetRepository<Region>();
-            var regions = await regionRepo.GetAllAsync();
+            var regions = await _regionRepo.GetAllAsync();
 
             return regions.Select(r => new RegionDto(
                 Id: r.Id,
@@ -34,9 +33,7 @@ namespace tariqi.Application_Layer.Services
         }
         public async Task<RegionDto> CreateRegionAsync(CreateRegionDto dto)
         {
-            var regionRepo = _unitOfWork.GetRepository<Region>();
-
-            var existingRegion = await regionRepo.FindAsync(r => r.Code == dto.Code || r.Name == dto.Name);
+            var existingRegion = await _regionRepo.FindAsync(r => r.Code == dto.Code || r.Name == dto.Name);
 
             if (existingRegion.Any())
                 throw new DomainValidationException("A region with the same Code or Name already exists.");
@@ -47,7 +44,7 @@ namespace tariqi.Application_Layer.Services
                 Code = dto.Code,
             };
 
-            await regionRepo.AddAsync(region);
+            await _regionRepo.AddAsync(region);
             await _unitOfWork.SaveAsync(); 
 
             return new RegionDto(
@@ -59,17 +56,12 @@ namespace tariqi.Application_Layer.Services
         }
         public async Task<IEnumerable<AreaDto>> FindAreasWithRegionAsync(int regionId)
         {
-            var regionRepo = _unitOfWork.GetRepository<Region>();
-
-
-            var regionExists = await regionRepo.GetByIdAsync(regionId);
+            var regionExists = await _regionRepo.GetByIdAsync(regionId);
 
             if(regionExists is null)
                 throw new NotFoundException($"Region with Id {regionId} was not found.");
 
-            var areaRepo = _unitOfWork.GetRepository<Area>();
-
-            var areas = await areaRepo.FindAsync(area => area.RegionId == regionId);
+            var areas = await _areaRepo.FindAsync(area => area.RegionId == regionId);
 
             return areas.Select(a => new AreaDto(
                 Id: a.Id,
@@ -91,13 +83,17 @@ namespace tariqi.Application_Layer.Services
             if (existingArea.Any())
                 throw new DomainValidationException($"An area named '{dto.Name}' already exists in this region.");
 
+            var regionExists = await _regionRepo.GetByIdAsync(dto.RegionId);
+
+            if (regionExists is null)
+                throw new NotFoundException("The specified region does not exist.");
+
             var area = new Area
             {
                 RegionId = dto.RegionId,
                 Name = dto.Name,
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
-                IsActive = true 
             };
 
             await _areaRepo.AddAsync(area);
