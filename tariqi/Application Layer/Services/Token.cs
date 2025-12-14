@@ -89,6 +89,5 @@ namespace tariqi.Application_Layer.Services
                 RefreshTokenExpiration = user.RefreshTokenExpiryTime
             };
         }
-
     }
 }

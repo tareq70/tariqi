@@ -16,7 +16,7 @@ namespace tariqi.Presentation_Layer.Controllers
         {
             _userService = userService;
         }
-        [HttpGet("Get Profile")]
+        [HttpGet("GetProfile")]
         public async Task<IActionResult> GetUser(string id)
         {
             try
@@ -29,7 +29,7 @@ namespace tariqi.Presentation_Layer.Controllers
                 return NotFound(new { message = ex.Message });
             }
         }
-        [HttpPut("Update Profile")]
+        [HttpPut("UpdateProfile")]
         public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
         {
             if (!ModelState.IsValid)

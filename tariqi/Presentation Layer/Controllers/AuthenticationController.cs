@@ -41,10 +41,18 @@ namespace tariqi.Presentation_Layer.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
-            var token = await _authService.LoginAsync(dto);
-            if (token == null) return Unauthorized("Invalid credentials");
+            try
+            {
+                var token = await _authService.LoginAsync(dto);
 
-            return Ok(new { token });
+                if (token == null) return Unauthorized("Invalid credentials");
+
+                return Ok(new { token });
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new {Message = ex.Message});
+            }
         }
         [HttpPost("refresh")]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
