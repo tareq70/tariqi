@@ -12,6 +12,9 @@ namespace tariqi.Domain_Layer.Entities
         public DateTime? BirthDate { get; set; }
         public int? RegionId { get; set; }
         public bool IsActive { get; set; } = true;
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiryTime { get; set; }
+
 
         public Region? Region { get; set; }
         public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using tariqi.Domain_Layer.Entities;
 
@@ -42,11 +43,11 @@ namespace tariqi.Infrastructure_Layer.DbContext
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Trip -> Vehicle (Restrict)
-                     builder.Entity<Trip>()
-                .HasOne(t => t.Vehicle)
-                .WithMany(v => v.Trips)
-                .HasForeignKey(t => t.VehicleId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Trip>()
+       .HasOne(t => t.Vehicle)
+       .WithMany(v => v.Trips)
+       .HasForeignKey(t => t.VehicleId)
+       .OnDelete(DeleteBehavior.Restrict);
 
             // Trip -> Origin Area (Restrict)
             builder.Entity<Trip>()
@@ -125,8 +126,7 @@ namespace tariqi.Infrastructure_Layer.DbContext
                 .HasMaxLength(7)
                 .IsRequired();
 
-
-
+           
 
         }
     }

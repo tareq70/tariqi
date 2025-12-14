@@ -9,6 +9,7 @@ using tariqi.Application_Layer.Interfaces;
 using tariqi.Application_Layer.Services;
 using tariqi.Domain_Layer.Entities;
 using tariqi.Domain_Layer.Repositories_Interfaces;
+using tariqi.Infrastructure_Layer.Data_Seeding;
 using tariqi.Infrastructure_Layer.DbContext; 
 using tariqi.Infrastructure_Layer.Repositories_Implementation;
 
@@ -30,6 +31,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 // ===== Services =====
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExternalAuthServices, ExternalAuthServices>();
 builder.Services.AddScoped<IToken, Token>();
 
@@ -92,7 +94,16 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+
+
 var app = builder.Build();
+
+// ===== Seed Roles and Admin User =====
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    await SeedData.SeedRolesAndAdminAsync(services);
+}
 
 // ===== Middleware =====
 if (app.Environment.IsDevelopment())

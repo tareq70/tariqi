@@ -5,6 +5,7 @@ using tariqi.Application_Layer.DTOs.Auth_DTOs;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Application_Layer.Services;
 using tariqi.Domain_Layer.Entities;
+using tariqi.Domain_Layer.Enums;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
@@ -13,16 +14,28 @@ namespace tariqi.Presentation_Layer.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IToken _token;
 
-        public AuthenticationController(IAuthService authService)
+        public AuthenticationController(IAuthService authService, IToken token)
         {
             _authService = authService;
+            _token = token;
         }
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        [HttpPost("register/{role}")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto, [FromRoute] UserRole role)
         {
-            await _authService.RegisterAsync(dto);
-            return Ok("User registered successfully");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _authService.RegisterUser(dto, role);
+                return Ok(new { message = $"User registered successfully as {role}" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         [HttpPost("login")]
@@ -32,6 +45,19 @@ namespace tariqi.Presentation_Layer.Controllers
             if (token == null) return Unauthorized("Invalid credentials");
 
             return Ok(new { token });
+        }
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+        {
+            try
+            {
+                var tokens = await _token.RefreshTokenAsync(dto.RefreshToken);
+                return Ok(tokens);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
         [HttpGet("test")]
         [Authorize]

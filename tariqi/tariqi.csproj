@@ -73,7 +73,6 @@
 
   <ItemGroup>
     <Folder Include="Application Layer\Profiles\" />
-    <Folder Include="Infrastructure Layer\Data Seeding\" />
     <Folder Include="Presentation Layer\Exceptions\" />
     <Folder Include="Shared\BaseEntity\" />
   </ItemGroup>
