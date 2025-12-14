@@ -25,14 +25,19 @@ namespace tariqi.Infrastructure_Layer.Repositories_Implementation
             return (IRepository<T>)_repositories[type];
         }
 
-        public async Task<int> SaveChangesAsync()
-        {
-            return await _context.SaveChangesAsync();
-        }
-
         public void Dispose()
         {
             _context.Dispose();
+        }
+
+        public int Save()
+        {
+            return _context.SaveChanges();
+        }
+
+        public async Task<int> SaveAsync()
+        {
+            return await _context.SaveChangesAsync();
         }
     }
 }
