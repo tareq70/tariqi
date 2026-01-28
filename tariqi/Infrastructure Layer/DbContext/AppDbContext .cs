@@ -33,7 +33,14 @@ namespace tariqi.Infrastructure_Layer.DbContext
                 .HasOne(v => v.Driver)
                 .WithMany(u => u.Vehicles)
                 .HasForeignKey(v => v.DriverId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Vehicle>()
+                 .HasOne(v => v.Area)
+                 .WithMany(a => a.Vehicles)
+                 .HasForeignKey(v => v.AreaId)
+                 .OnDelete(DeleteBehavior.Restrict);
+
 
             // Trip -> Creator (Restrict)
             builder.Entity<Trip>()
@@ -44,10 +51,10 @@ namespace tariqi.Infrastructure_Layer.DbContext
 
             // Trip -> Vehicle (Restrict)
             builder.Entity<Trip>()
-       .HasOne(t => t.Vehicle)
-       .WithMany(v => v.Trips)
-       .HasForeignKey(t => t.VehicleId)
-       .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(t => t.Vehicle)
+                .WithMany(v => v.Trips)
+                .HasForeignKey(t => t.VehicleId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Trip -> Origin Area (Restrict)
             builder.Entity<Trip>()

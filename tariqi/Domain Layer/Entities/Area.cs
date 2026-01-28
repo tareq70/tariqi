@@ -12,5 +12,6 @@
         public Region Region { get; set; } = null!;
         public ICollection<Trip> OriginTrips { get; set; } = new List<Trip>();
         public ICollection<Trip> DestinationTrips { get; set; } = new List<Trip>();
+        public ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
     }
 }
