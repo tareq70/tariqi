@@ -2,9 +2,10 @@
 {
     public class UpdateVehicleDto
     {
-        public string Brand { get; set; } = null!;
-        public string Model { get; set; } = null!;
-        public int SeatsCount { get; set; }
-        public bool IsActive { get; set; } 
+        public string? PlateNumber { get; set; }
+        public string? Model { get; set; }
+        public int? SeatsCount { get; set; }
+        public int? AreaId { get; set; }
+        public string? DriverId { get; set; }
     }
 }
