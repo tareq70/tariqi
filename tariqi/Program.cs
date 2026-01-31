@@ -35,6 +35,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExternalAuthServices, ExternalAuthServices>();
 builder.Services.AddScoped<IToken, Token>();
 builder.Services.AddScoped<IGeographicalService, GeographicalService>();
+builder.Services.AddScoped<IVehiclesService, VehiclesService>();
+
 
 // ===== JWT Authentication =====
 var jwtSection = builder.Configuration.GetSection("Jwt");
