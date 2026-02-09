@@ -124,8 +124,22 @@ namespace tariqi.Application_Layer.Services
             if (trip.Status == TripStatus.Completed)
                 throw new Exception("Cannot cancel completed trip");
 
-            if (role == "Driver" && trip.CreatedBy != currentUserId)
+            // Driver authorization
+            if (role == "Driver" && trip.CreatedBy != currentUserId) // عشان لو سواق مختلف مينفعش
                 throw new Exception("Unauthorized");
+
+            // Optional: Admin only / Driver only handled here
+            if (role != "Driver" && role != "Admin")
+                throw new Exception("Unauthorized");
+
+            // 12 hours policy
+            var hoursBeforeDeparture =
+                (trip.DepartureDateTime - DateTime.UtcNow).TotalHours;
+
+            if (hoursBeforeDeparture < 12)
+                throw new Exception(
+                    "Trip can only be cancelled at least 12 hours before departure"
+                );
 
             trip.Status = TripStatus.Cancelled;
 
