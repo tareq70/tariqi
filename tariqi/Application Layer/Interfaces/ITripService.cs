@@ -5,8 +5,13 @@ namespace tariqi.Application_Layer.Interfaces
     public interface ITripService
     {
         // Search available trips 
-        Task<IEnumerable<TripDto>> SearchTripsAsync
-            (int? originRegionId, int? destinationRegionId, DateTime? date); // Search available trips 
+        Task<IEnumerable<TripDto>> SearchTripsAsync(
+            int? originAreaId,
+            int? destinationAreaId,
+            int? originRegionId,
+            int? destinationRegionId,
+            DateTime? date
+        );
         // Get trip details by ID
         Task<TripDto> GetTripByIdAsync(int tripId); 
         // Create a new trip 

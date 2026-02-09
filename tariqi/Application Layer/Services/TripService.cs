@@ -23,7 +23,11 @@ namespace tariqi.Application_Layer.Services
             _bookingRepo = _unitOfWork.GetRepository<Booking>();
             _areaRepo = _unitOfWork.GetRepository<Area>();
         }
-        public async Task<IEnumerable<TripDto>> SearchTripsAsync(int? originRegionId, int? destinationRegionId, DateTime? date)
+        public async Task<IEnumerable<TripDto>> SearchTripsAsync(int? originAreaId,
+            int? destinationAreaId,
+            int? originRegionId,
+            int? destinationRegionId,
+            DateTime? date)
         {
             var trips = await _tripRepo.FindAsync(
                 t => t.Status == TripStatus.Scheduled &&
@@ -31,10 +35,12 @@ namespace tariqi.Application_Layer.Services
 
             return trips
                 .Where(t =>
+                    (!originAreaId.HasValue || t.OriginAreaId == originAreaId) &&
+                    (!destinationAreaId.HasValue || t.DestinationAreaId == destinationAreaId) &&
                     (!originRegionId.HasValue || t.OriginArea.RegionId == originRegionId) &&
                     (!destinationRegionId.HasValue || t.DestinationArea.RegionId == destinationRegionId)
                 )
-                .Select(t => MapToTripDto(t)); // private method to map Trip to TripDto (Helper Regions)
+                .Select(t => MapToTripDto(t)); // private method to map Trip to TripDto 
         }
         public async Task<TripDto> GetTripByIdAsync(int tripId)
         {
