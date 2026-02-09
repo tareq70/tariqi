@@ -17,7 +17,7 @@ namespace tariqi.Application_Layer.Interfaces
         // Create a new trip 
         Task<TripDto> CreateTripAsync(CreateTripDto dto, string currentUserId, string role);
         // Update an existing trip
-        Task<TripDto> UpdateTripAsync(int tripId,CreateTripDto dto,string currentUserId,string role);
+        Task<TripDto> UpdateTripAsync(int tripId,UpdateTripDto dto,string currentUserId,string role);
 
         // Cancel a trip [Driver | Admin]
         Task CancelTripAsync(int tripId,string currentUserId,string role);

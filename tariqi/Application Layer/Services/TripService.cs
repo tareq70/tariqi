@@ -93,7 +93,7 @@ namespace tariqi.Application_Layer.Services
 
             return MapToTripDto(trip);
         }
-        public async Task<TripDto> UpdateTripAsync(int tripId, CreateTripDto dto, string currentUserId, string role)
+        public async Task<TripDto> UpdateTripAsync(int tripId, UpdateTripDto dto, string currentUserId, string role)
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
@@ -105,10 +105,72 @@ namespace tariqi.Application_Layer.Services
             if (role == "Driver" && trip.CreatedBy != currentUserId)
                 throw new Exception("Unauthorized");
 
+            if (role != "Driver" && role != "Admin")
+                throw new Exception("Unauthorized");
 
-            trip.DepartureDateTime = dto.DepartureDateTime;
-            trip.EstimatedArrivalTime = dto.EstimatedArrivalTime;
-            trip.PricePerSeat = dto.PricePerSeat;
+            bool isUpdated = false;
+
+            // Departure Date
+            if (dto.DepartureDateTime.HasValue &&
+                dto.DepartureDateTime.Value != trip.DepartureDateTime)
+            {
+                if (dto.DepartureDateTime.Value <= DateTime.UtcNow)
+                    throw new Exception("Departure date must be in the future");
+
+                trip.DepartureDateTime = dto.DepartureDateTime.Value;
+                isUpdated = true;
+            }
+
+            // Estimated Arrival
+            if (dto.EstimatedArrivalTime.HasValue &&
+                dto.EstimatedArrivalTime != trip.EstimatedArrivalTime)
+            {
+                trip.EstimatedArrivalTime = dto.EstimatedArrivalTime;
+                isUpdated = true;
+            }
+
+            // Price Per Seat
+            if (dto.PricePerSeat.HasValue &&
+                dto.PricePerSeat.Value != trip.PricePerSeat)
+            {
+                if (dto.PricePerSeat.Value <= 0)
+                    throw new Exception("Price per seat must be greater than zero");
+
+                trip.PricePerSeat = dto.PricePerSeat.Value;
+                isUpdated = true;
+            }
+
+            // Origin Area
+            if (dto.OriginAreaId.HasValue &&
+                dto.OriginAreaId.Value != trip.OriginAreaId)
+            {
+                var originArea = await _areaRepo.GetByIdAsync(dto.OriginAreaId.Value);
+                if (originArea == null)
+                    throw new Exception("Invalid origin area");
+
+                trip.OriginAreaId = dto.OriginAreaId.Value;
+                trip.OriginRegionId = originArea.RegionId;
+                isUpdated = true;
+            }
+
+            // Destination Area
+            if (dto.DestinationAreaId.HasValue &&
+                dto.DestinationAreaId.Value != trip.DestinationAreaId)
+            {
+                var destinationArea =
+                    await _areaRepo.GetByIdAsync(dto.DestinationAreaId.Value);
+
+                if (destinationArea == null)
+                    throw new Exception("Invalid destination area");
+
+                trip.DestinationAreaId = dto.DestinationAreaId.Value;
+                trip.DestinationRegionId = destinationArea.RegionId;
+                isUpdated = true;
+            }
+
+            // No changes detected
+            if (!isUpdated)
+                throw new Exception("No changes detected. Trip data was not updated.");
 
             _tripRepo.Update(trip);
             await _unitOfWork.SaveAsync();

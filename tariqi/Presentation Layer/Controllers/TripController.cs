@@ -24,9 +24,12 @@ namespace tariqi.Presentation_Layer.Controllers
         public async Task<IActionResult> SearchTrips(
             [FromQuery] int? originRegionId,
             [FromQuery] int? destinationRegionId,
+            [FromQuery] int? originAreaId,
+            [FromQuery] int? destinationAreaId,
             [FromQuery] DateTime? date)
         {
             var trips = await _tripService.SearchTripsAsync(
+                originAreaId, destinationAreaId,
                 originRegionId,
                 destinationRegionId,
                 date
@@ -78,7 +81,7 @@ namespace tariqi.Presentation_Layer.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateTrip(
             int id,
-            [FromBody] CreateTripDto dto)
+            [FromBody] UpdateTripDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
