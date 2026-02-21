@@ -1,4 +1,5 @@
 ﻿using tariqi.Application_Layer.DTOs.Vehicle_DTOs;
+using tariqi.Application_Layer.Exceptions;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Domain_Layer.Entities;
 using tariqi.Domain_Layer.Enums;
@@ -94,7 +95,7 @@ namespace tariqi.Application_Layer.Services
         {
             var vehicle = await _vehiclesRepo.GetByIdAsync(vehicleId);
             if (vehicle == null || !vehicle.IsActive)
-                throw new Exception("Vehicle not found");
+               throw new NotFoundException("Vehicle not found");
             return new VehicleDto
             {
                 Id = vehicle.Id,

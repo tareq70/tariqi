@@ -7,9 +7,7 @@ using tariqi.Application_Layer.Interfaces;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TripController : ControllerBase
+    public class TripController : BaseController
     {
         private readonly ITripService _tripService;
 

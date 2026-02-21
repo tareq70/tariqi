@@ -9,9 +9,7 @@ using tariqi.Domain_Layer.Enums;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController : BaseController
     {
         private readonly IAuthService _authService;
         private readonly IToken _token;

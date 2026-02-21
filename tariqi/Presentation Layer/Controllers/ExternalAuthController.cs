@@ -13,8 +13,6 @@ using tariqi.Domain_Layer.Entities;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     public class ExternalAuthController : ControllerBase
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
