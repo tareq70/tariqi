@@ -16,7 +16,8 @@ namespace tariqi.Presentation_Layer.Responses
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 
         public object? Meta { get; set; }
-
         public string? TraceId { get; set; }
+        public string? ErrorType { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

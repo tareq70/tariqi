@@ -10,13 +10,16 @@ namespace tariqi.Presentation_Layer.Exceptions
 
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionMiddleware> _logger;
+        private readonly IHostEnvironment _environment;
 
         public ExceptionMiddleware(
             RequestDelegate next,
-            ILogger<ExceptionMiddleware> logger)
+            ILogger<ExceptionMiddleware> logger,
+            IHostEnvironment environment)
         {
             _next = next;
             _logger = logger;
+            _environment = environment;
         }
 
         public async Task Invoke(HttpContext context)
@@ -39,21 +42,26 @@ namespace tariqi.Presentation_Layer.Exceptions
 
             context.Response.ContentType = "application/json";
 
-            var (statusCode, message) = exception switch
+            var (statusCode, message, errorType) = exception switch
             {
                 NotFoundException =>
-                    (HttpStatusCode.NotFound, exception.Message),
+                    (HttpStatusCode.NotFound, exception.Message, "NotFound"),
 
                 DomainValidationException =>
-                    (HttpStatusCode.BadRequest, exception.Message),
+                    (HttpStatusCode.BadRequest, exception.Message, "Validation"),
 
                 UnauthorizedException =>
-                    (HttpStatusCode.Unauthorized, exception.Message),
+                    (HttpStatusCode.Unauthorized, exception.Message, "Unauthorized"),
 
                 _ =>
                     (HttpStatusCode.InternalServerError,
-                     "An unexpected error occurred.")
+                     "An unexpected error occurred.", "InternalServerError")
             };
+
+            if(_environment.IsDevelopment())
+            {
+                message = exception.Message;
+            }
 
             context.Response.StatusCode = (int)statusCode;
 
@@ -73,6 +81,7 @@ namespace tariqi.Presentation_Layer.Exceptions
 
             var response = ApiResponseFactory.Fail<object>(
                 message,
+                errorType,
                 traceId: traceId
             );
 

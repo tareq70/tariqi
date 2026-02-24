@@ -28,15 +28,22 @@ namespace tariqi.Presentation_Layer.Responses
                 TraceId = traceId
             };
         }
+
+
         public static ApiResponse<T> Fail<T>(
-            string? message = null, object? errors = null, string? traceId = null)
+            string? message = null,
+            string? errorType = null,
+            object? errors = null,
+            string? traceId = null)
         {
             return new ApiResponse<T>
             {
                 Success = false,
-                Message = message ?? "Operation is Failed",
+                Message = message ?? "Operation failed",
+                ErrorType = errorType,
                 Errors = errors,
-                TraceId = traceId
+                TraceId = traceId,
+                Timestamp = DateTime.UtcNow
             };
         }
     }
