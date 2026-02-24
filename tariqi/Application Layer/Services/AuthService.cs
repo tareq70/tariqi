@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using tariqi.Application_Layer.DTOs.Auth_DTOs;
+using tariqi.Application_Layer.Exceptions;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Domain_Layer.Entities;
 using tariqi.Domain_Layer.Enums;
@@ -41,7 +42,10 @@ namespace tariqi.Application_Layer.Services
         {
             var existingUser = await _userManager.FindByEmailAsync(dto.Email);
             if (existingUser != null)
-                throw new Exception("Email already exists");
+                throw new DomainValidationException("Email already exists");
+
+            if (!_roleMap.TryGetValue(role, out var roleName))
+                throw new DomainValidationException("Invalid role");
 
             var user = new ApplicationUser
             {
@@ -59,14 +63,11 @@ namespace tariqi.Application_Layer.Services
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
-
-            if (!_roleMap.TryGetValue(role, out var roleName))
-                throw new Exception("Role mapping not found");
+                throw new DomainValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             var roleResult = await _userManager.AddToRoleAsync(user, roleName);
             if (!roleResult.Succeeded)
-                throw new Exception(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                throw new DomainValidationException(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
         }
 
 
@@ -76,11 +77,11 @@ namespace tariqi.Application_Layer.Services
            .FirstOrDefaultAsync(u => u.Email == dto.Identifier || u.PhoneNumber == dto.Identifier);
 
             if (user == null)
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
 
             var isValid = await _userManager.CheckPasswordAsync(user, dto.Password);
             if (!isValid)
-                throw new Exception("Invalid credentials");
+                throw new UnauthorizedException("Invalid credentials");
 
             var roles = await _userManager.GetRolesAsync(user);
             return _token.GenerateJwtToken(user, roles.FirstOrDefault() ?? "Passenger");

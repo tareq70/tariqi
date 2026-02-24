@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using tariqi.Application_Layer.DTOs.Auth_DTOs;
+using tariqi.Application_Layer.Exceptions;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Domain_Layer.Entities;
 
@@ -17,7 +18,7 @@ namespace tariqi.Application_Layer.Services
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) 
-                throw new Exception("User not found");
+                throw new NotFoundException("User not found");
 
             return new UserDto
             {
@@ -36,7 +37,7 @@ namespace tariqi.Application_Layer.Services
         public async Task<UserDto> UpdateUserAsync(string id, UpdateUserDto dto)
         {
             var user = await _userManager.FindByIdAsync(id);
-            if (user == null) throw new Exception("User not found");
+            if (user == null) throw new NotFoundException("User not found");
 
             if (!string.IsNullOrEmpty(dto.FullName))
                 user.FullName = dto.FullName;
@@ -57,7 +58,7 @@ namespace tariqi.Application_Layer.Services
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
-                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+                throw new DomainValidationException(string.Join(", ", result.Errors.Select(e => e.Description)));
 
             return new UserDto
             {

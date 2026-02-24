@@ -1,4 +1,5 @@
 ﻿using tariqi.Application_Layer.DTOs.Trip_DTOs;
+using tariqi.Application_Layer.Exceptions;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Domain_Layer.Entities;
 using tariqi.Domain_Layer.Enums;
@@ -46,7 +47,7 @@ namespace tariqi.Application_Layer.Services
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
-                throw new Exception("Trip not found");
+                throw new NotFoundException("Trip not found");
 
             return MapToTripDto(trip);
         }
@@ -54,25 +55,25 @@ namespace tariqi.Application_Layer.Services
         {
             var vehicle = await _vehicleRepo.GetByIdAsync(dto.VehicleId);
             if (vehicle == null || !vehicle.IsActive)
-                throw new Exception("Vehicle not found");
+                throw new NotFoundException("Vehicle not found");
 
             if (role == "Driver" && vehicle.DriverId != currentUserId)
-                throw new Exception("You are not allowed to create trip for this vehicle");
+                throw new UnauthorizedException("You are not allowed to create trip for this vehicle");
 
             if (dto.OriginAreaId == dto.DestinationAreaId)
-                throw new Exception("Origin and Destination cannot be the same");
+                throw new DomainValidationException("Origin and Destination cannot be the same");
 
             if (dto.DepartureDateTime <= DateTime.UtcNow)
-                throw new Exception("Departure time must be in the future");
+                throw new DomainValidationException("Departure time must be in the future");
 
             if (dto.PricePerSeat <= 0)
-                throw new Exception("Invalid price");
+                throw new DomainValidationException("Invalid price");
 
             var originArea = await _areaRepo.GetByIdAsync(dto.OriginAreaId);
             var destinationArea = await _areaRepo.GetByIdAsync(dto.DestinationAreaId);
 
             if (originArea == null || destinationArea == null)
-                throw new Exception("Invalid areas");
+                throw new NotFoundException("Invalid areas");
 
             var trip = new Trip
             {
@@ -97,16 +98,16 @@ namespace tariqi.Application_Layer.Services
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
-                throw new Exception("Trip not found");
+                throw new NotFoundException("Trip not found");
 
             if (trip.Status != TripStatus.Scheduled)
-                throw new Exception("Only scheduled trips can be updated");
+                throw new DomainValidationException("Only scheduled trips can be updated");
 
             if (role == "Driver" && trip.CreatedBy != currentUserId)
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             if (role != "Driver" && role != "Admin")
-                throw new Exception("Unauthorized");
+                throw new DomainValidationException("Unauthorized");
 
             bool isUpdated = false;
 
@@ -115,7 +116,7 @@ namespace tariqi.Application_Layer.Services
                 dto.DepartureDateTime.Value != trip.DepartureDateTime)
             {
                 if (dto.DepartureDateTime.Value <= DateTime.UtcNow)
-                    throw new Exception("Departure date must be in the future");
+                    throw new DomainValidationException("Departure date must be in the future");
 
                 trip.DepartureDateTime = dto.DepartureDateTime.Value;
                 isUpdated = true;
@@ -134,7 +135,7 @@ namespace tariqi.Application_Layer.Services
                 dto.PricePerSeat.Value != trip.PricePerSeat)
             {
                 if (dto.PricePerSeat.Value <= 0)
-                    throw new Exception("Price per seat must be greater than zero");
+                    throw new DomainValidationException("Price per seat must be greater than zero");
 
                 trip.PricePerSeat = dto.PricePerSeat.Value;
                 isUpdated = true;
@@ -146,7 +147,7 @@ namespace tariqi.Application_Layer.Services
             {
                 var originArea = await _areaRepo.GetByIdAsync(dto.OriginAreaId.Value);
                 if (originArea == null)
-                    throw new Exception("Invalid origin area");
+                    throw new NotFoundException("Invalid origin area");
 
                 trip.OriginAreaId = dto.OriginAreaId.Value;
                 trip.OriginRegionId = originArea.RegionId;
@@ -161,7 +162,7 @@ namespace tariqi.Application_Layer.Services
                     await _areaRepo.GetByIdAsync(dto.DestinationAreaId.Value);
 
                 if (destinationArea == null)
-                    throw new Exception("Invalid destination area");
+                    throw new NotFoundException("Invalid destination area");
 
                 trip.DestinationAreaId = dto.DestinationAreaId.Value;
                 trip.DestinationRegionId = destinationArea.RegionId;
@@ -170,7 +171,7 @@ namespace tariqi.Application_Layer.Services
 
             // No changes detected
             if (!isUpdated)
-                throw new Exception("No changes detected. Trip data was not updated.");
+                throw new DomainValidationException("No changes detected. Trip data was not updated.");
 
             _tripRepo.Update(trip);
             await _unitOfWork.SaveAsync();
@@ -181,25 +182,25 @@ namespace tariqi.Application_Layer.Services
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
-                throw new Exception("Trip not found");
+                throw new NotFoundException("Trip not found");
 
             if (trip.Status == TripStatus.Completed)
-                throw new Exception("Cannot cancel completed trip");
+                throw new DomainValidationException("Cannot cancel completed trip");
 
             // Driver authorization
             if (role == "Driver" && trip.CreatedBy != currentUserId) // عشان لو سواق مختلف مينفعش
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             // Optional: Admin only / Driver only handled here
             if (role != "Driver" && role != "Admin")
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             // 12 hours policy
             var hoursBeforeDeparture =
                 (trip.DepartureDateTime - DateTime.UtcNow).TotalHours;
 
             if (hoursBeforeDeparture < 12)
-                throw new Exception(
+                throw new DomainValidationException(
                     "Trip can only be cancelled at least 12 hours before departure"
                 );
 
@@ -236,13 +237,13 @@ namespace tariqi.Application_Layer.Services
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
-                throw new Exception("Trip not found");
+                throw new NotFoundException("Trip not found");
 
             if (trip.Status != TripStatus.Scheduled)
-                throw new Exception("Trip cannot be started");
+                throw new DomainValidationException("Trip cannot be started");
 
             if (trip.Vehicle.DriverId != currentUserId)
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             trip.Status = TripStatus.OnGoing;
             _tripRepo.Update(trip);
@@ -252,13 +253,13 @@ namespace tariqi.Application_Layer.Services
         {
             var trip = await _tripRepo.GetByIdAsync(tripId);
             if (trip == null)
-                throw new Exception("Trip not found");
+                throw new NotFoundException("Trip not found");
 
             if (trip.Status != TripStatus.OnGoing)
-                throw new Exception("Trip is not ongoing");
+                throw new DomainValidationException("Trip is not ongoing");
 
             if (trip.Vehicle.DriverId != currentUserId)
-                throw new Exception("Unauthorized");
+                throw new UnauthorizedException("Unauthorized");
 
             trip.Status = TripStatus.Completed;
             _tripRepo.Update(trip);

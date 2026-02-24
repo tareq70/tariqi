@@ -12,6 +12,7 @@ using tariqi.Domain_Layer.Repositories_Interfaces;
 using tariqi.Infrastructure_Layer.Data_Seeding;
 using tariqi.Infrastructure_Layer.DbContext; 
 using tariqi.Infrastructure_Layer.Repositories_Implementation;
+using tariqi.Presentation_Layer.Exceptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,8 +109,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     await SeedData.SeedRolesAndAdminAsync(services);
 }
-
 // ===== Middleware =====
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -127,6 +128,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
