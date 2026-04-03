@@ -5,12 +5,11 @@ using System.Security.Claims;
 using tariqi.Application_Layer.DTOs.Vehicle_DTOs;
 using tariqi.Application_Layer.Interfaces;
 using tariqi.Application_Layer.Services;
+using tariqi.Presentation_Layer.Responses;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class VehicleController : ControllerBase
+    public class VehicleController : BaseController
     {
         private readonly IVehiclesService _vehiclesService;
 
@@ -20,26 +19,37 @@ namespace tariqi.Presentation_Layer.Controllers
         }
 
         [HttpGet("GetAllVehicles")]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<ApiResponse<IEnumerable<VehicleDto>>>> GetAll()
         {
-            return Ok(await _vehiclesService.GetAllVehiclesAsync());
+            var vehicles = await _vehiclesService.GetAllVehiclesAsync();
+            return Success(
+                vehicles,
+                vehicles.Any()
+                ? "Vehicles retrieved successfully"
+                : "No vehicles found");
         }
 
         [HttpGet("GetVehicleById")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<ApiResponse<VehicleDto>>> GetById(int id)
         {
-            return Ok(await _vehiclesService.GetVehicleByIdAsync(id));
+            var vehicle = await _vehiclesService.GetVehicleByIdAsync(id);
+            return Success(vehicle, "Vehicle retrieved successfully");
         }
 
         [HttpGet("GetVehicleByAreaId")]
-        public async Task<IActionResult> GetByArea(int areaId)
+        public async Task<ActionResult<ApiResponse<IEnumerable<VehicleDto>>>> GetByArea(int areaId)
         {
-            return Ok(await _vehiclesService.GetVehiclesByAreaAsync(areaId));
+            var vehicles = await _vehiclesService.GetVehiclesByAreaAsync(areaId);
+            return Success(
+                vehicles,
+                vehicles.Any()
+                ? "Vehicles retrieved successfully"
+                : "No vehicles found for the specified area");
         }
 
        // [Authorize]
         [HttpPut("UpdateVehicle")]
-        public async Task<IActionResult> Update(int id, UpdateVehicleDto dto)
+        public async Task<ActionResult<ApiResponse<VehicleDto>>> Update(int id, UpdateVehicleDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var role = User.FindFirstValue(ClaimTypes.Role);
@@ -51,19 +61,15 @@ namespace tariqi.Presentation_Layer.Controllers
                 role!
             );
 
-            return Ok(result);
+            return Success(result, "Vehicle updated successfully");
         }
 
        // [Authorize(Roles = "Admin")]
         [HttpPost("CreateVehicle")]
-        public async Task<IActionResult> Create([FromBody] CreateVehicleDto dto)
+        public async Task<ActionResult<ApiResponse<VehicleDto>>> Create([FromBody] CreateVehicleDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var role = User.FindFirstValue(ClaimTypes.Role);
-            //if (userId == null || role == null)
-            //{
-            //    return Unauthorized();
-            //}
 
             var vehicle = await _vehiclesService.CreateVehicleAsync(
                 dto,
@@ -71,21 +77,17 @@ namespace tariqi.Presentation_Layer.Controllers
                 role!
             );
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = vehicle.Id },
-                vehicle
-            );
+            return Success(vehicle, "Vehicle created successfully");
         }
 
         [HttpDelete("DeleteVehicle")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<ApiResponse<object>>> Delete(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var role = User.FindFirstValue(ClaimTypes.Role);
 
             await _vehiclesService.DeleteVehicleAsync(id, userId!, role!);
-            return NoContent();
+            return Success("Vehicle deleted successfully");
         }
 
 

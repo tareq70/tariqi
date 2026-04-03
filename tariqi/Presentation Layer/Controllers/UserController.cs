@@ -6,9 +6,7 @@ using tariqi.Application_Layer.Services;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UserController : ControllerBase
+    public class UserController : BaseController
     {
         private readonly IUserService _userService;
 

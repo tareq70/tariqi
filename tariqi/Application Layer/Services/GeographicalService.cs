@@ -156,7 +156,7 @@ namespace tariqi.Application_Layer.Services
             }
             catch (Exception ex)
             {
-                throw new CanNotRemoveException(ex.Message);
+                throw new DomainValidationException(ex.Message);
             }
 
         }

@@ -9,9 +9,7 @@ using tariqi.Domain_Layer.Repositories_Interfaces;
 
 namespace tariqi.Presentation_Layer.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class GeographicalController : ControllerBase
+    public class GeographicalController : BaseController
     {
         private readonly IGeographicalService _geographicalService;
 
